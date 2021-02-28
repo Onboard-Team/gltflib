@@ -9,6 +9,7 @@ from .gltf_resource import (
     GLB_BINARY_CHUNK_TYPE)
 from .models import GLTFModel, Buffer, BufferView, Image
 from .utils import padbytes, create_parent_dirs
+import chardet
 
 
 class GLTF:
@@ -399,7 +400,9 @@ class GLTF:
         b = f.read(bytelen)
         if len(b) != bytelen:
             warnings.warn(f'Unexpected EOF when parsing JSON chunk body. The GLB file may be corrupt.', RuntimeWarning)
-        model_json = b.decode('utf-8').strip()
+        result = chardet.detect(b)
+        charenc = result['encoding']
+        model_json = b.decode(charenc).strip()
         self.model = GLTFModel.from_json(model_json)
 
     def _load_glb_binary_chunk_body(self, f: BinaryIO, chunk_type: int, bytelen: int) -> None:
